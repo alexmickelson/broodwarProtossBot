@@ -42,3 +42,8 @@ wine REG ADD "HKEY_CURRENT_USER\\Software\\Chaoslauncher\\Launcher" /v "RunScOnS
 # Enable BWAPI 4.4.0 Injector plugin by default
 wine REG ADD "HKEY_CURRENT_USER\\Software\\Chaoslauncher\\PluginsEnabled" /v "BWAPI 4.4.0 Injector [RELEASE]" /t REG_SZ /d "1" /f 2>/dev/null || true
 wine REG ADD "HKEY_CURRENT_USER\\Software\\Chaoslauncher\\PluginsEnabled" /v "W-MODE 1.02" /t REG_SZ /d "1" /f 2>/dev/null || true
+
+echo "Waiting for registry changes to commit..."
+wineserver -w
+
+echo "Registry configuration complete."

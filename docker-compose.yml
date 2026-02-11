@@ -1,0 +1,22 @@
+services:
+  broodwar-bot:
+    build:
+      context: .
+      dockerfile: protossbot/Dockerfile
+    container_name: broodwar-protoss-bot
+    ports:
+      - 5900:5900
+      - 3003:3333
+      - 6112:6112/udp
+    restart: unless-stopped
+
+  novnc:
+    build:
+      context: .
+      dockerfile: novnc.Dockerfile
+      args:
+        VNC_SERVER: broodwar-bot:5900
+    container_name: novnc-viewer
+    ports:
+      - 6080:6080
+    restart: unless-stopped

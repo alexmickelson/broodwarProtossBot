@@ -41,7 +41,7 @@ pub async fn start_web_server(
     .layer(cors)
     .fallback_service(ServeDir::new(static_dir));
 
-  let addr = "127.0.0.1:3333";
+  let addr = "0.0.0.0:3333";
 
   let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
 

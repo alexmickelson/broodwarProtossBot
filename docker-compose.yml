@@ -4,52 +4,69 @@ services:
       context: .
       dockerfile: protossbot/Dockerfile
     container_name: broodwar-protoss-bot-1
-    ports:
-      - 5901:5900
-      - 3001:3000
-      - 6112:6112/udp
+    network_mode: host
+    environment:
+      - X_DISPLAY_NUMBER=99
+      - VNC_PORT=5901
+      - WEBSERVER_PORT=3001
+    # ports:
+    #   - 5901:5900
+    #   - 3001:3333
+    #   - 6113:6113
     restart: unless-stopped
-    networks:
-      - broodwar-network
 
   broodwar-bot-2:
     build:
       context: .
       dockerfile: protossbot/Dockerfile
     container_name: broodwar-protoss-bot-2
-    ports:
-      - 5902:5900
-      - 3002:3000
-      - 6113:6112/udp
+    network_mode: host
+    environment:
+      - X_DISPLAY_NUMBER=100
+      - VNC_PORT=5902
+      - WEBSERVER_PORT=3002
+      - STARTUP_DELAY=10
+      - UDP_BLOCKED_PORTS=6112
+    # ports:
+    #   - 5902:5900
+    #   - 3002:3333
+    #   - 6114:6114
     restart: unless-stopped
-    networks:
-      - broodwar-network
+    depends_on:
+      - broodwar-bot-1
 
   broodwar-bot-3:
     build:
       context: .
       dockerfile: protossbot/Dockerfile
     container_name: broodwar-protoss-bot-3
-    ports:
-      - 5903:5900
-      - 3003:3000
-      - 6114:6112/udp
+    network_mode: host
+    environment:
+      - X_DISPLAY_NUMBER=101
+      - VNC_PORT=5903
+      - WEBSERVER_PORT=3003
+      - STARTUP_DELAY=20
+      - UDP_BLOCKED_PORTS=6112 6113
+    # ports:
+    #   - 5903:5900
+    #   - 3003:3333
+    #   - 6115:6115
     restart: unless-stopped
-    networks:
-      - broodwar-network
+    depends_on:
+      - broodwar-bot-2
 
   novnc-bot-1:
     build:
       context: .
       dockerfile: novnc.Dockerfile
       args:
-        VNC_SERVER: broodwar-bot-1:5900
+        VNC_SERVER: host.docker.internal:5901
     container_name: novnc-viewer-bot-1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - 6081:6080
     restart: unless-stopped
-    networks:
-      - broodwar-network
     depends_on:
       - broodwar-bot-1
 
@@ -58,13 +75,13 @@ services:
       context: .
       dockerfile: novnc.Dockerfile
       args:
-        VNC_SERVER: broodwar-bot-2:5900
+        VNC_SERVER: host.docker.internal:5902
     container_name: novnc-viewer-bot-2
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - 6082:6080
     restart: unless-stopped
-    networks:
-      - broodwar-network
     depends_on:
       - broodwar-bot-2
 
@@ -73,16 +90,21 @@ services:
       context: .
       dockerfile: novnc.Dockerfile
       args:
-        VNC_SERVER: broodwar-bot-3:5900
+        VNC_SERVER: host.docker.internal:5903
     container_name: novnc-viewer-bot-3
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - 6083:6080
     restart: unless-stopped
-    networks:
-      - broodwar-network
     depends_on:
       - broodwar-bot-3
 
-networks:
-  broodwar-network:
-    driver: bridge
+  dashboard:
+    image: nginx:alpine
+    container_name: broodwar-dashboard
+    ports:
+      - 8080:80
+    volumes:
+      - ./dashboard:/usr/share/nginx/html:ro
+    restart: unless-stopped

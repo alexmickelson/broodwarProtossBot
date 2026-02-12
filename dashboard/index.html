@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Broodwar Bot Dashboard</title>
+    <style>
+      :root {
+        /* Background colors */
+        --bg-primary: #1a1d29;
+        --bg-secondary: #252937;
+        --bg-tertiary: #2d3142;
+
+        /* Text colors */
+        --text-primary: #e4e6eb;
+        --text-secondary: #b8bcc8;
+        --text-muted: #8a8f9e;
+
+        /* Accent colors - desaturated */
+        --accent-primary: #5b6d8f;
+        --accent-primary-hover: #6b7d9f;
+        --accent-secondary: #7a6d8f;
+        --accent-tertiary: #6d8a8f;
+
+        /* Button colors - muted tones */
+        --btn-web: #4a6d8f;
+        --btn-web-hover: #5a7d9f;
+        --btn-vnc: #6d5a8f;
+        --btn-vnc-hover: #7d6a9f;
+        --btn-novnc: #5a8f7d;
+        --btn-novnc-hover: #6a9f8d;
+
+        /* Status colors */
+        --status-active: #6b9d7d;
+
+        /* Border and shadow */
+        --border-color: #3a3f52;
+        --shadow-color: rgba(0, 0, 0, 0.4);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--bg-primary);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        color: var(--text-primary);
+        text-align: center;
+        margin-bottom: 40px;
+        font-size: 2.5em;
+        text-shadow: 2px 2px 4px var(--shadow-color);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .bot-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 12px var(--shadow-color);
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+
+      .bot-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px var(--shadow-color);
+      }
+
+      .bot-card h2 {
+        color: var(--text-primary);
+        margin-bottom: 20px;
+        font-size: 1.5em;
+        border-bottom: 2px solid var(--accent-primary);
+        padding-bottom: 10px;
+      }
+
+      .links {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .link-btn {
+        display: block;
+        padding: 12px 20px;
+        background: var(--accent-primary);
+        color: var(--text-primary);
+        text-decoration: none;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: 1px solid var(--border-color);
+      }
+
+      .link-btn:hover {
+        transform: translateY(-2px);
+        background: var(--accent-primary-hover);
+        box-shadow: 0 4px 8px var(--shadow-color);
+      }
+
+      .link-btn.web {
+        background: var(--btn-web);
+      }
+
+      .link-btn.web:hover {
+        background: var(--btn-web-hover);
+      }
+
+      .link-btn.vnc {
+        background: var(--btn-vnc);
+      }
+
+      .link-btn.vnc:hover {
+        background: var(--btn-vnc-hover);
+      }
+
+      .link-btn.novnc {
+        background: var(--btn-novnc);
+      }
+
+      .link-btn.novnc:hover {
+        background: var(--btn-novnc-hover);
+      }
+
+      .status-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--status-active);
+        margin-right: 8px;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .info-section {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 12px var(--shadow-color);
+        margin-top: 20px;
+      }
+
+      .info-section h3 {
+        color: var(--text-primary);
+        margin-bottom: 15px;
+      }
+
+      .info-section p {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 10px;
+      }
+
+      .info-section code {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: "Courier New", monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎮 Broodwar Protoss Bot Dashboard</h1>
+
+      <div class="grid">
+        <!-- Bot 1 -->
+        <div class="bot-card">
+          <h2><span class="status-indicator"></span>Bot Instance #1</h2>
+          <div class="links">
+            <a
+              href="http://localhost:3001"
+              target="_blank"
+              class="link-btn web"
+            >
+              📊 Bot Web Interface
+            </a>
+            <a
+              href="http://localhost:6081"
+              target="_blank"
+              class="link-btn novnc"
+            >
+              🖥️ noVNC Viewer
+            </a>
+            <p
+              style="
+                margin-top: 10px;
+                color: var(--text-muted);
+                font-size: 0.9em;
+              "
+            >
+              VNC Port: 5901 | UDP: 6112
+            </p>
+          </div>
+        </div>
+
+        <!-- Bot 2 -->
+        <div class="bot-card">
+          <h2><span class="status-indicator"></span>Bot Instance #2</h2>
+          <div class="links">
+            <a
+              href="http://localhost:3002"
+              target="_blank"
+              class="link-btn web"
+            >
+              📊 Bot Web Interface
+            </a>
+            <a
+              href="http://localhost:6082"
+              target="_blank"
+              class="link-btn novnc"
+            >
+              🖥️ noVNC Viewer
+            </a>
+            <p
+              style="
+                margin-top: 10px;
+                color: var(--text-muted);
+                font-size: 0.9em;
+              "
+            >
+              VNC Port: 5902 | UDP: 6113
+            </p>
+          </div>
+        </div>
+
+        <!-- Bot 3 -->
+        <div class="bot-card">
+          <h2><span class="status-indicator"></span>Bot Instance #3</h2>
+          <div class="links">
+            <a
+              href="http://localhost:3003"
+              target="_blank"
+              class="link-btn web"
+            >
+              📊 Bot Web Interface
+            </a>
+            <a
+              href="http://localhost:6083"
+              target="_blank"
+              class="link-btn novnc"
+            >
+              🖥️ noVNC Viewer
+            </a>
+            <p
+              style="
+                margin-top: 10px;
+                color: var(--text-muted);
+                font-size: 0.9em;
+              "
+            >
+              VNC Port: 5903 | UDP: 6114
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -41,9 +41,10 @@ pub async fn start_web_server(
     .layer(cors)
     .fallback_service(ServeDir::new(static_dir));
 
-  let addr = "0.0.0.0:3333";
+  let port = std::env::var("WEBSERVER_PORT").unwrap_or_else(|_| "3333".to_string());
+  let addr = format!("0.0.0.0:{}", port);
 
-  let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+  let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
 
   println!("Web server running at http://{}", addr);
 

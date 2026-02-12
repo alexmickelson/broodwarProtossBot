@@ -10,6 +10,8 @@ WORKDIR /app
 
 COPY flake.nix flake.lock /app/
 
+ENV DISPLAY=:99
+ENV SCREEN_RESOLUTION=640x480x24
 ENV WINEPREFIX=/app/.wine
 ENV WINEARCH=win64
 ENV WINEDLLOVERRIDES="mscoree,mshtml="
@@ -17,52 +19,26 @@ ENV WINEDEBUG=-all
 
 RUN nix develop --command bash -c "wine wineboot --init && wineserver -w"
 
-RUN nix profile install nixpkgs#xorg.xorgserver nixpkgs#x11vnc nixpkgs#fluxbox nixpkgs#xorg.xdpyinfo nixpkgs#socat
-
-COPY scripts /app/scripts
-COPY starcraft /app/starcraft
+RUN nix profile install nixpkgs#xorg.xorgserver nixpkgs#x11vnc nixpkgs#fluxbox nixpkgs#xorg.xdpyinfo
 
 COPY protossbot /app/protossbot
 
 RUN nix develop --command bash -c "cd protossbot && cargo build --target x86_64-pc-windows-gnu --release"
 
-ENV DISPLAY=:99
-ENV SCREEN_RESOLUTION=640x480x24
-ENV VNC_PORT=5900
-ENV X_DISPLAY_NUMBER=99
-ENV WEBSERVER_PORT=3333
+COPY starcraft /app/starcraft
+
 
 RUN cat <<'EOF' > /start-bot.sh
 #!/usr/bin/env bash
 
-# Startup delay for sequential bot initialization
-STARTUP_DELAY=${STARTUP_DELAY:-0}
-if [ "$STARTUP_DELAY" -gt 0 ]; then
-  echo "Waiting ${STARTUP_DELAY} seconds before starting..."
-  sleep $STARTUP_DELAY
-fi
+rm -f /tmp/.X99-lock /tmp/.X11-unix/X99
 
-# Block UDP ports to force StarCraft to use specific port
-if [ -n "$UDP_BLOCKED_PORTS" ]; then
-  echo "Blocking UDP ports: $UDP_BLOCKED_PORTS"
-  for port in $UDP_BLOCKED_PORTS; do
-    socat UDP-LISTEN:$port,fork /dev/null &
-    echo "Blocked UDP port $port"
-  done
-  sleep 1
-fi
-
-X_DISPLAY_NUMBER=${X_DISPLAY_NUMBER:-99}
-export DISPLAY=:${X_DISPLAY_NUMBER}
-
-rm -f /tmp/.X${X_DISPLAY_NUMBER}-lock /tmp/.X11-unix/X${X_DISPLAY_NUMBER}
-
-echo "Starting Xvfb virtual display on :${X_DISPLAY_NUMBER}..."
-Xvfb :${X_DISPLAY_NUMBER} -screen 0 $SCREEN_RESOLUTION &
+echo "Starting Xvfb virtual display..."
+Xvfb :99 -screen 0 $SCREEN_RESOLUTION &
 XVFB_PID=$!
 
 for i in {1..10}; do
-  if xdpyinfo -display :${X_DISPLAY_NUMBER} >/dev/null 2>&1; then
+  if xdpyinfo -display :99 >/dev/null 2>&1; then
     echo "X server is ready"
     break
   fi
@@ -73,18 +49,19 @@ done
 echo "Starting Fluxbox window manager..."
 fluxbox &
 
-VNC_PORT=${VNC_PORT:-5900}
-echo "Starting VNC server on port $VNC_PORT..."
-x11vnc -nopw -display :${X_DISPLAY_NUMBER} -forever -shared -rfbport $VNC_PORT &
+echo "Starting VNC server on port 5900..."
+x11vnc -nopw -display :99 -forever -shared -rfbport 5900 &
 
 cd /app
+
+export DISPLAY=:99
 
 exec nix develop --command bash -c '
   export WINEPREFIX=/app/.wine
   export WINEARCH=win64
   export WINEDLLOVERRIDES="mscoree,mshtml="
   export WINEDEBUG=-all
-  export DISPLAY=:'"${X_DISPLAY_NUMBER}"'
+  export DISPLAY=:99
 
   echo "Configuring Wine registry..."
   

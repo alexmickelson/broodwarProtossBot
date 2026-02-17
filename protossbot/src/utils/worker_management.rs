@@ -66,13 +66,24 @@ fn should_assign_to_refinery(worker: &Unit, player: &Player, state: &GameState) 
     .filter(|u| u.get_type().is_refinery() && u.exists() && u.is_completed())
     .collect::<Vec<Unit>>();
 
+  let total_worker_count = player
+    .get_units()
+    .into_iter()
+    .filter(|u| u.get_type().is_worker() && u.is_completed())
+    .count();
+ let refinery_goal = match total_worker_count {
+    0..=10 => 1,
+    14..=20 => 2,
+    _ => 3,
+  };
+
   for refinery in refineries {
     let assigned_workers_count = state
       .worker_refinery_assignments
       .values()
       .filter(|&&r_id| r_id == refinery.get_id())
       .count();
-    if assigned_workers_count < 3 {
+    if assigned_workers_count < refinery_goal {
       return true;
     }
   }

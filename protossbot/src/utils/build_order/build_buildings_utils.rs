@@ -36,11 +36,22 @@ pub fn check_if_building_started(game: &Game, player: &Player, state: &mut GameS
       .iter()
       .any(|b| b.get_type() == unit_type);
 
+    // For addons, check if the builder (parent building) has the addon or is building it
+    let addon_started = if unit_type.is_addon() {
+      builder.get_addon().map_or(false, |addon| {
+        addon.get_type() == unit_type && addon.is_constructing()
+      })
+    } else {
+      false
+    };
+
     // println!(
     //   "Builder {} assigned to build {:?}, under construction: {:?}, order: {:?}",
     //   builder_id, unit_type, building_type_is_under_construction, builder_order
     // );
-    if builder_order == Order::ConstructingBuilding && building_type_is_under_construction {
+    if (builder_order == Order::ConstructingBuilding && building_type_is_under_construction)
+      || addon_started
+    {
       println!(
         "Builder {} has started constructing {:?}",
         builder_id, unit_type
@@ -50,7 +61,7 @@ pub fn check_if_building_started(game: &Game, player: &Player, state: &mut GameS
   }
 }
 
-pub fn try_restart_failed_builing_builds(game: &Game, player: &Player, state: &mut GameState) {
+pub fn try_restart_failed_building_builds(game: &Game, player: &Player, state: &mut GameState) {
   let mut to_restart = Vec::new();
 
   for (idx, entry) in state.unit_build_history.iter().enumerate() {
@@ -63,6 +74,15 @@ pub fn try_restart_failed_builing_builds(game: &Game, player: &Player, state: &m
     let Some(builder) = game.get_unit(builder_id) else {
       continue;
     };
+
+    if builder.get_type().is_building()
+      && matches!(
+        builder.get_order(),
+        Order::LiftingOff | Order::PlaceAddon | Order::BuildingLiftOff | Order::BuildingLand
+      )
+    {
+      continue;
+    }
 
     if !matches!(
       builder.get_order(),
@@ -130,10 +150,11 @@ pub fn try_restart_failed_builing_builds(game: &Game, player: &Player, state: &m
       }
       Err(e) => {
         println!(
-          "Restart build order FAILED for {} by builder {}: {:?}",
+          "Restart build order FAILED for {} by builder {}: {:?}, (old order: {:?})",
           unit_type.name(),
           builder_id,
-          e
+          e,
+          builder.get_order()
         );
       }
     }
@@ -155,15 +176,15 @@ pub fn start_building_construction(
   let Some(building_location) =
     build_location_utils::find_build_location_default(game, player, state, &builder, unit_type)
   else {
-    state.unit_build_history.push(BuildHistoryEntry {
-      unit_type: Some(unit_type),
-      upgrade_type: None,
-      assigned_unit_id: Some(builder_id),
-      tile_position: None,
-      status: BuildStatus::Assigned,
-    });
+    println!(
+      "No valid build location found for {:?} by builder {}, tick {}",
+      unit_type.name(),
+      builder_id,
+      game.get_frame_count()
+    );
     return;
   };
+
   state.unit_build_history.push(BuildHistoryEntry {
     unit_type: Some(unit_type),
     upgrade_type: None,
@@ -227,14 +248,25 @@ fn explore_location_for_building(
   let Some(builder) = game.get_unit(builder_id) else {
     return;
   };
-  println!(
-    "moving builder {} next to build location to build {}",
-    builder_id,
-    unit_type.name()
-  );
+  // println!(
+  //   "moving builder {} next to build location to build {}",
+  //   builder_id,
+  //   unit_type.name()
+  // );
   let build_pos = Position {
     x: (location.x * 32) - 16,
     y: (location.y * 32),
   };
-  builder.move_(build_pos);
+
+  match builder.move_(build_pos) {
+    Ok(true) => {
+      println!("Builder {} moving to explore location", builder_id);
+    }
+    Ok(false) => {
+      println!("Builder {} failed to move to explore location", builder_id);
+    }
+    Err(e) => {
+      println!("Builder {} move command error when exploring: {:?}", builder_id, e);
+    }
+  }
 }

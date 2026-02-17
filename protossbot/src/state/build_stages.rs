@@ -32,43 +32,41 @@ pub fn get_build_stages() -> Vec<BuildStage> {
   vec![
     BuildStage::new("Start")
       .with_unit(UnitType::Terran_SCV, 8)
-      .with_unit(UnitType::Terran_Supply_Depot, 1),
+      .with_unit(UnitType::Terran_Supply_Depot, 1)
+      .with_unit(UnitType::Terran_Barracks, 1),
     BuildStage::new("Basic Production")
-      .with_unit(UnitType::Terran_SCV, 12)
-      .with_unit(UnitType::Terran_Barracks, 2),
+      .with_unit(UnitType::Terran_Refinery, 1)
+      .with_unit(UnitType::Terran_SCV, 14),
     BuildStage::new("stage 3")
-      .with_unit(UnitType::Terran_SCV, 17)
-      .with_unit(UnitType::Terran_Supply_Depot, 2)
-      .with_unit(UnitType::Terran_Barracks, 2)
-      .with_unit(UnitType::Terran_Marine, 6)
-      .with_unit(UnitType::Terran_Command_Center, 2)
-      .with_unit(UnitType::Terran_Refinery, 1),
-      BuildStage::new("Mid Game")
+      .with_unit(UnitType::Terran_SCV, 24)
       .with_unit(UnitType::Terran_Factory, 1)
-      // .with_unit(UnitType::Terran_Machine_Shop, 1)
-      .with_unit(UnitType::Terran_SCV, 20)
-      .with_unit(UnitType::Terran_Engineering_Bay, 1)
-      .with_unit(UnitType::Terran_Supply_Depot, 2)
-      .with_unit(UnitType::Terran_Barracks, 2)
-      // .with_upgrade(UpgradeType::Terran_Infantry_Weapons)
-      .with_unit(UnitType::Terran_Marine, 15),
-    BuildStage::new("next step")
-      // .with_upgrade(UpgradeType::U_238_Shells)
-      // .with_upgrade(UpgradeType::Terran_Infantry_Armor)
-      .with_unit(UnitType::Terran_Missile_Turret, 2)
-      .with_unit(UnitType::Terran_Marine, 20)
-      .with_unit(UnitType::Terran_Vulture, 4)
-      .with_unit(UnitType::Terran_Academy, 1)
-      .with_unit(UnitType::Terran_Medic, 4)
-      .with_unit(UnitType::Terran_SCV, 30)
-      // .with_unit(UnitType::Terran_Firebat, 10)
-      .with_unit(UnitType::Terran_Barracks, 8),
-    BuildStage::new("late game tech")
-      .with_unit(UnitType::Terran_Science_Facility, 1)
-      .with_unit(UnitType::Terran_Starport, 1)
-      .with_unit(UnitType::Terran_SCV, 30)
-      .with_unit(UnitType::Terran_Factory, 2)
-      .with_unit(UnitType::Terran_Armory, 1)
-      .with_unit(UnitType::Terran_Vulture, 50),
+      .with_unit(UnitType::Terran_Machine_Shop, 1)
+      .with_unit(UnitType::Terran_Supply_Depot, 2),
+    // .with_unit(UnitType::Terran_Marine, 4)
+    // .with_unit(UnitType::Terran_Starport, 1),
+    // BuildStage::new("Mid Game")
+    //   .with_unit(UnitType::Terran_SCV, 28)
+    //   // .with_unit(UnitType::Terran_Engineering_Bay, 1)
+    //   .with_unit(UnitType::Terran_Supply_Depot, 2)
+    //   .with_unit(UnitType::Terran_Science_Facility, 1)
+    //   .with_unit(UnitType::Terran_Physics_Lab, 1)
+    //   .with_unit(UnitType::Terran_Armory, 1)
+    //   .with_unit(UnitType::Terran_Command_Center, 2)
+    //   .with_unit(UnitType::Terran_Wraith, 1)
+    //   // .with_upgrade(UpgradeType::Terran_Infantry_Weapons)
+    //   .with_unit(UnitType::Terran_Marine, 7),
+    // BuildStage::new("next step")
+    //   .with_unit(UnitType::Terran_Starport, 3)
+    //   .with_unit(UnitType::Terran_Control_Tower, 3)
+    //   // .with_upgrade(UpgradeType::U_238_Shells)
+    //   // .with_upgrade(UpgradeType::Terran_Infantry_Armor)
+    //   // .with_unit(UnitType::Terran_Missile_Turret, 1)
+    //   .with_unit(UnitType::Terran_Battlecruiser, 1)
+    //   .with_unit(UnitType::Terran_Marine, 10)
+    //   .with_unit(UnitType::Terran_SCV, 30),
+    // BuildStage::new("late game tech")
+    //   .with_unit(UnitType::Terran_SCV, 30)
+    //   .with_unit(UnitType::Terran_Factory, 2)
+    //   .with_unit(UnitType::Terran_Armory, 1)
   ]
 }

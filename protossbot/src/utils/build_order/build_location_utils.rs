@@ -10,7 +10,16 @@ pub fn find_build_location_default(
   builder: &Unit,
   building_type: UnitType,
 ) -> Option<TilePosition> {
-  find_build_location(game, player, game_state, builder, building_type, 15)
+  if building_type.is_addon() {
+    println!(
+      "Finding addon location for builder {} at frame {}",
+      builder.get_id(),
+      game.get_frame_count()
+    );
+    find_addon_building_location(game, builder, building_type)
+  } else {
+    find_build_location(game, player, game_state, builder, building_type, 15)
+  }
 }
 
 pub fn find_build_location(
@@ -54,6 +63,146 @@ pub fn find_build_location(
   None
 }
 
+pub fn find_addon_building_location(
+  game: &Game,
+  builder: &Unit,
+  building_type: UnitType,
+) -> Option<TilePosition> {
+  let builder_pos = builder.get_tile_position();
+  let builder_height = builder.get_type().tile_height();
+  let addon_height = building_type.tile_height();
+
+  // Calculate addon position (to the right of the building)
+  let addon_pos = TilePosition {
+    x: builder_pos.x + builder_type.tile_width(),
+    y: builder_pos.y + builder_height - addon_height,
+  };
+
+  let mut coords = Vec::new();
+  for dx in -10..=10 {
+    for dy in -10..=10 {
+      let dist_sq = dx * dx + dy * dy;
+      coords.push((dx, dy, dist_sq));
+    }
+  }
+  coords.sort_by_key(|&(_, _, dist_sq)| dist_sq);
+
+  for (dx, dy, dist_sq) in coords {
+    let candidate = TilePosition {
+      x: addon_pos.x + dx,
+      y: addon_pos.y + dy,
+    };
+    if can_build_addon_here(game, builder, candidate, building_type) {
+      println!(
+        "Found addon location at offset ({}, {}), distance: {}, builder at ({}, {}), new pos ({}, {})",
+        dx, dy, (dist_sq as f64).sqrt(), builder_pos.x, builder_pos.y, candidate.x, candidate.y
+      );
+      return Some(candidate);
+    } else {
+      println!(
+        "Cannot build addon at offset ({}, {}), distance: {}, builder at ({}, {}), candidate pos ({}, {})",
+        dx, dy, (dist_sq as f64).sqrt(), builder_pos.x, builder_pos.y, candidate.x, candidate.y
+      );
+    }
+  }
+
+  None
+}
+
+fn can_build_addon_here(
+  game: &Game,
+  builder: &Unit,
+  addon_target_position: TilePosition,
+  addon_type: UnitType,
+) -> bool {
+  let addon_width = addon_type.tile_width();
+  let addon_height = addon_type.tile_height();
+
+  let builder_width = builder.get_type().tile_width();
+  let builder_height = builder.get_type().tile_height();
+  let builder_pos = TilePosition {
+    x: addon_target_position.x - builder_width,
+    y: addon_target_position.y + addon_height - builder_height,
+  };
+
+  if builder_pos.x < 0 || builder_pos.y < 0 {
+    return false;
+  }
+  if builder_pos.x + builder_width > game.map_width()
+    || builder_pos.y + builder_height > game.map_height()
+  {
+    return false;
+  }
+
+  if addon_target_position.x < 0 || addon_target_position.y < 0 {
+    return false;
+  }
+  if addon_target_position.x + addon_width > game.map_width()
+    || addon_target_position.y + addon_height > game.map_height()
+  {
+    return false;
+  }
+
+  let all_units = game.get_all_units();
+  let units_within_5_tiles: Vec<&Unit> = all_units
+    .iter()
+    .filter(|u| {
+      let other_pos = u.get_tile_position();
+      let dx = (other_pos.x - addon_target_position.x).abs();
+      let dy = (other_pos.y - addon_target_position.y).abs();
+      dx <= 5 && dy <= 5
+    })
+    .collect();
+
+  let tiles_occupied_by_units: Vec<TilePosition> = units_within_5_tiles
+    .iter()
+    .flat_map(|u| {
+      let pos = u.get_tile_position();
+      let width = u.get_type().tile_width();
+      let height = u.get_type().tile_height();
+      (0..width).flat_map(move |dx| {
+        (0..height).map(move |dy| TilePosition {
+          x: pos.x + dx,
+          y: pos.y + dy,
+        })
+      })
+    })
+    .collect();
+
+  for dx in 0..addon_width {
+    for dy in 0..addon_height {
+      let check_pos = TilePosition {
+        x: addon_target_position.x + dx,
+        y: addon_target_position.y + dy,
+      };
+
+      if !game.is_buildable(check_pos) {
+        return false;
+      }
+      if tiles_occupied_by_units.contains(&check_pos) {
+        return false;
+      }
+    }
+  }
+  for dx in 0..builder_width {
+    for dy in 0..builder_height {
+      let check_pos = TilePosition {
+        x: builder_pos.x + dx,
+        y: builder_pos.y + dy,
+      };
+
+      if !game.is_buildable(check_pos) {
+        return false;
+      }
+      if tiles_occupied_by_units.contains(&check_pos) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 fn generate_shuffled_coordinates(max_range: i32) -> Vec<(i32, i32)> {
   let mut coords = Vec::new();
   for dx in -max_range..=max_range {
@@ -67,7 +216,7 @@ fn generate_shuffled_coordinates(max_range: i32) -> Vec<(i32, i32)> {
 }
 
 fn get_command_center_location(
-  game: &Game,
+  _game: &Game,
   player: &Player,
   game_state: &GameState,
 ) -> Option<TilePosition> {

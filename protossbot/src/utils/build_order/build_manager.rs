@@ -15,7 +15,7 @@ pub fn on_frame(game: &Game, player: &Player, state: &mut GameState) {
   check_and_advance_stage(player, state);
   state.stage_item_status = next_thing_to_build::get_status_for_stage_items(game, player, state);
 
-  build_buildings_utils::try_restart_failed_builing_builds(game, player, state);
+  build_buildings_utils::try_restart_failed_building_builds(game, player, state);
   try_start_next_build(game, player, state);
 }
 
